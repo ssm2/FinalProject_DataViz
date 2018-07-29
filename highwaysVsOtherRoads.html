@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      /* background: #ccc; */
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .axis .domain {
+      display: none;
+    }
+
+    .topnav {
+      margin: 0 auto;
+      width: 900px;
+      overflow: hidden;
+      background-color: #f2f2f2;
+      border-radius: 8px;
+      /* display: inline; */
+      text-align: center;
+    }
+
+    .topnav a {
+      float: left;
+      display: inline;
+      color: #4d4d4d;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .topnav a:hover {
+      background-color: #ddd;
+      color: black;
+      border-radius: 8px;
+    }
+
+    .topnav a.active {
+      background-color: #bfbfbf;
+      color: black;
+      border-radius: 8px;
+    }
+
+    .column {
+      float: left;
+      padding: 10px;
+    }
+
+    .left {
+      width: 68%;
+    }
+
+    .right {
+      width: 32%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <title> Data Visualization - Final Project </title>
+  </br>
+  <h1 align="center"> Fatal Accidents in United States - Year 2015 </h1>
+
+  <div class="topnav">
+    <a href="aboutVisualization.html">About The Visualization </a>
+    <a href="accidentsByState.html">Fatal Accidents by State</a>
+    <a class="active" href="highwaysVsOtherRoads.html">Highways vs Other Roads</a>
+    <a href="accidentsByState.html"> &ltPrev </a>
+    <a href="highwaysVsOtherRoads.html">Next> </a>
+  </div>
+
+  <div class="row">
+    <div class="column left">
+      <svg width="960" height="500"></svg>
+      <script src="https://d3js.org/d3.v4.min.js"></script>
+      <script>
+        var svg = d3.select("svg"),
+          margin = {
+            top: 20,
+            right: 20,
+            bottom: 30,
+            left: 40
+          },
+          width = +svg.attr("width") - margin.left - margin.right,
+          height = +svg.attr("height") - margin.top - margin.bottom,
+          g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        svg.append("text")
+          .attr("x", 320)
+          .attr("y", 10)
+          .attr("dy", "1em")
+          .attr("text-anchor", "start")
+          .style("font-size", "18px")
+          .style("font-weight", "bold")
+          .text("Accident Counts - Highways vs Other Roads");
+
+        var x = d3.scaleBand()
+          .rangeRound([0, width])
+          .paddingInner(0.1)
+          .align(0.1);
+
+        var y = d3.scaleLinear()
+          .rangeRound([height, 0]);
+
+        var z = d3.scaleOrdinal()
+          .range(["#4e79a7", "#76b7b2"]);
+
+        d3.csv("stackData.csv", function(d, i, columns) {
+          for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+          d.total = t;
+          return d;
+        }, function(error, data) {
+          if (error) throw error;
+
+          var keys = data.columns.slice(1);
+
+          data.sort(function(a, b) {
+            return b.total - a.total;
+          });
+          x.domain(data.map(function(d) {
+            return d.State;
+          }));
+          y.domain([0, d3.max(data, function(d) {
+            return d.total;
+          })]).nice();
+          z.domain(keys);
+
+          g.append("g")
+            .selectAll("g")
+            .data(d3.stack().keys(keys)(data))
+            .enter().append("g")
+            .attr("fill", function(d) {
+              return z(d.key);
+            })
+            .selectAll("rect")
+            .data(function(d) {
+              return d;
+            })
+            .enter().append("rect")
+            .attr("x", function(d) {
+              return x(d.data.State);
+            })
+            .attr("y", function(d) {
+              return y(d[1]);
+            })
+            .attr("height", function(d) {
+              return y(d[0]) - y(d[1]);
+            })
+            .attr("width", x.bandwidth())
+            .on("mouseover", function() {
+              tooltip.style("display", null);
+            })
+            .on("mouseout", function() {
+              tooltip.style("display", "none");
+            })
+            .on("mousemove", function(d) {
+              var xPosition = d3.mouse(this)[0] - 15;
+              var yPosition = d3.mouse(this)[1] - 25;
+              tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+              tooltip.select("text").text(d[1]);
+            });
+
+          //x-axis
+          g.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+          //y-axis
+          g.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .append("text")
+            .attr("x", 2)
+            .attr("y", y(y.ticks().pop()) + 0.5)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "start")
+            .text("Total Fatalities");
+
+          var legend = g.append("g")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            .attr("transform", function(d, i) {
+              return "translate(0," + i * 20 + ")";
+            });
+
+          legend.append("rect")
+            .attr("x", width - 19)
+            .attr("width", 19)
+            .attr("height", 19)
+            .attr("fill", z);
+
+          legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) {
+              return d;
+            });
+
+
+          //add tooltip
+          var tooltip = g.append("g")
+            .attr("class", "tooltip")
+            .style("display", "none");
+
+          tooltip.append("rect")
+            .attr("width", 30)
+            .attr("height", 20)
+            .attr("fill", "white")
+            .style("opacity", 0.5);
+
+          tooltip.append("text")
+            .attr("x", 15)
+            .attr("dy", "1.2em")
+            .style("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .attr("font-weight", "bold");
+
+          var ant = svg.selectAll(".ant")
+            .data(data)
+            .enter().append("g");
+
+          ant.append("text")
+            .attr("x", 400)
+            .attr("y", 150)
+            .attr("text-anchor", "start")
+            .style("font-size", "14px")
+            // .style("font-family", "Comic Sans MS")
+            .text("There was a total of 13,069 accidents reported on highways and 22,416 accidents reported on other roads.. i.e. around 63% occured on the other roads.")
+            .call(wrap, 230);
+
+          ant.append("line")
+            .attr("x1", 400)
+            .attr("x2", 620)
+            .attr("y1", 218)
+            .attr("y2", 218)
+            .attr("stroke", "black");
+
+        });
+
+        function wrap(text, width) {
+          text.each(function() {
+            var text = d3.select(this),
+              words = text.text().split(/\s+/).reverse(),
+              word,
+              line = [],
+              lineNumber = 0,
+              lineHeight = 1.1, // ems
+              x = text.attr("x"),
+              y = text.attr("y"),
+              dy = 0, //parseFloat(text.attr("dy")),
+              tspan = text.text(null)
+              .append("tspan")
+              .attr("x", x)
+              .attr("y", y)
+              .attr("dy", dy + "em");
+            while (word = words.pop()) {
+              line.push(word);
+              tspan.text(line.join(" "));
+              if (tspan.node().getComputedTextLength() > width) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan")
+                  .attr("x", x)
+                  .attr("y", y)
+                  .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                  .text(word);
+              }
+            }
+          });
+        }
+      </script>
+    </div>
+  </div>
+
+  <body>
+    <div class="col-sm-3">
+
+      <h4>Accidents on Highways vs Other Roads</h4>
+
+      <p>The common assumption is that the accidents occur more on highways due to the higher speed limit and high traffic. The chart shows that the numbers of accidents that occur on other roads are more than the number on highways.</p>
+      <p>There was a total of 13,069 accidents reported on highways and 22,416 accidents reported on other roads. i.e. around 63% of the accidents occurred on the local roads. </p>
+      <p>Note: The chart only has the details for the continental states of the US. So, the details for Alaska, Hawaii and other territories are not available.</p>
+      </br>
+
+      <h4>About the chart</h4>
+      <p>The stacked bar chart shows the count of accidents on highways vs other roads. Each bar represents a state and the two-different colors on the bars represents the counts. The bars are sorted by the total number of accidents by state.</p>
+      <p>Hovering over the bars will provide information about the number of accidents in that category.</p>
+
+    </div>
+
+  </body>
+
+</html>
