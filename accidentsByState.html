@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      /* background: #ccc; */
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    svg {
+      font: 10px"Lato";
+    }
+
+
+    div.tooltip {
+      position: absolute;
+      text-align: center;
+      width: 100px;
+      height: 30px;
+      padding: 2px;
+      font: 14px sans-serif;
+      background: lightsteelblue;
+      border: 0px;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .column {
+      float: left;
+      padding: 10px;
+    }
+
+    .left {
+      width: 70%;
+    }
+
+    .right {
+      width: 30%;
+    }
+
+    .topnav {
+      margin: 0 auto;
+      width: 900px;
+      overflow: hidden;
+      background-color: #f2f2f2;
+      border-radius: 8px;
+      /* display: inline; */
+      text-align: center;
+    }
+
+    .topnav a {
+      float: left;
+      display: inline;
+      color: #4d4d4d;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .topnav a:hover {
+      background-color: #ddd;
+      color: black;
+      border-radius: 8px;
+    }
+
+    .topnav a.active {
+      background-color: #bfbfbf;
+      color: black;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<title> Data Visualization - Final Project </title>
+</br>
+<h1 align="center"> Fatal Accidents in United States - Year 2015 </h1>
+
+<div class="topnav">
+  <a href="aboutVisualization.html">About The Visualization </a>
+  <a class="active" href="accidentsByState.html">Fatal Accidents by State</a>
+  <a href="highwaysVsOtherRoads.html">Highways vs Other Roads</a>
+  <a href="aboutVisualization.html"> &ltPrev </a>
+  <a href="highwaysVsOtherRoads.html">Next> </a>
+</div>
+
+
+<div class="row">
+  <div class="column left">
+    <div align="right">
+      <p>
+        <label for="state"> Enter State name: </label>
+        <select name="state" id="state">
+      <option value="" selected="selected">Select a State</option>
+      <option value="AL">Alabama</option>
+      <option value="AZ">Arizona</option>
+      <option value="AR">Arkansas</option>
+      <option value="CA">California</option>
+      <option value="CO">Colorado</option>
+      <option value="CT">Connecticut</option>
+      <option value="DE">Delaware</option>
+      <option value="FL">Florida</option>
+      <option value="GA">Georgia</option>
+      <option value="ID">Idaho</option>
+      <option value="IL">Illinois</option>
+      <option value="IN">Indiana</option>
+      <option value="IA">Iowa</option>
+      <option value="KS">Kansas</option>
+      <option value="KY">Kentucky</option>
+      <option value="LA">Louisiana</option>
+      <option value="ME">Maine</option>
+      <option value="MD">Maryland</option>
+      <option value="MA">Massachusetts</option>
+      <option value="MI">Michigan</option>
+      <option value="MN">Minnesota</option>
+      <option value="MS">Mississippi</option>
+      <option value="MO">Missouri</option>
+      <option value="MT">Montana</option>
+      <option value="NE">Nebraska</option>
+      <option value="NV">Nevada</option>
+      <option value="NH">New Hampshire</option>
+      <option value="NJ">New Jersey</option>
+      <option value="NM">New Mexico</option>
+      <option value="NY">New York</option>
+      <option value="NC">North Carolina</option>
+      <option value="ND">North Dakota</option>
+      <option value="OH">Ohio</option>
+      <option value="OK">Oklahoma</option>
+      <option value="OR">Oregon</option>
+      <option value="PA">Pennsylvania</option>
+      <option value="RI">Rhode Island</option>
+      <option value="SC">South Carolina</option>
+      <option value="SD">South Dakota</option>
+      <option value="TN">Tennessee</option>
+      <option value="TX">Texas</option>
+      <option value="UT">Utah</option>
+      <option value="VT">Vermont</option>
+      <option value="VA">Virginia</option>
+      <option value="WA">Washington</option>
+      <option value="WV">West Virginia</option>
+      <option value="WI">Wisconsin</option>
+      <option value="WY">Wyoming</option>
+    </select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </p>
+    </div>
+
+    <svg width="1260" height="700" font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <script>
+      var svg = d3.select("svg");
+      var width = +svg.attr("width");
+      var height = +svg.attr("height");
+      //var height = +svg.attr("height") - 40;
+
+
+      // Define the div for the tooltip
+      var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+
+      svg.append("text")
+        .attr("x", 400)
+        .attr("y", 2)
+        .attr("dy", "1em")
+        .attr("text-anchor", "start")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .text("Accident Counts by State");
+
+      var pack = d3.pack()
+        .size([width - 500, height])
+        .padding(1);
+
+      d3.csv("states.csv", function(d) {
+        d.value = +d["Count"];
+        d.State = d["State"];
+        d.sid = d["Id"]
+
+        return d;
+      }, function(error, data) {
+        if (error) throw error;
+        var color = d3.scaleOrdinal(d3.schemeCategory20c);
+
+        var root = d3.hierarchy({
+            children: data
+          })
+          .sum(function(d) {
+            return d.value;
+          })
+        // .sort(function(d) { return d.value; });
+
+        var node = svg.selectAll(".node")
+          .data(pack(root).leaves())
+          .enter().append("g")
+          .attr("class", "node")
+          .attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + ")";
+          });
+
+
+        node.append("circle")
+          .attr("id", function(d) {
+            return d.id;
+          })
+          .attr("r", function(d) {
+            return d.r;
+          })
+          .style("fill", function(d) {
+            return color(d.data.sid);
+          })
+          .on("mouseover", function(d) {
+            div.transition()
+              .duration(200)
+              .style("opacity", .9);
+
+            var duration = 300;
+            data.forEach(function(d, i) {
+              console.log(d.value);
+              node.transition().duration(duration).delay(i * duration)
+                .attr("r", d.value);
+            });
+
+
+            div.html(d.data.State + "<br>" + d.data.value)
+              .style("left", (d3.event.pageX) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+          })
+          .on("mouseout", function(d) {
+            div.transition()
+              .duration(500)
+              .style("opacity", 0);
+          });
+
+        node.append("text")
+          .text(function(d) {
+            //if (d.data.value > 500|| d.data.State == "Other" || d.data.State == "Fire"){
+            if (d.data.value > 0) {
+              return d.data.sid;
+            }
+            return "";
+          });
+
+        //handle user input state
+
+        // when the input range changes update value
+        d3.select("#state").on("change", function() {
+          update(+this.value);
+        });
+
+        // Initial update value
+        // update("");
+
+        // adjust the text
+        function update() {
+
+          var sName = document.getElementById("state").value;
+
+          node.selectAll("circle")
+            .style("stroke-width", function(d) {
+              if (d.data.sid == sName) {
+                return 4;
+              }
+            })
+            .style("stroke", function(d) {
+              if (d.data.sid == sName) {
+                return "red";
+              }
+            })
+
+        }
+
+
+        // var legend = svg.selectAll(".legend")
+        // .data(data).enter()
+        // .append("g")
+        // .attr("class","legend")
+        // .attr("transform", "translate(" + 1040 + "," + 40+ ")");
+        //
+        //
+        //  legend.append("rect")
+        //    .attr("x", 0)
+        //    .attr("y", function(d, i) { return 15 * i; })
+        //    .attr("width", 12)
+        //    .attr("height", 12)
+        // 	.style("fill", function(d) { return color(d.State)});
+        //
+        //
+        //   legend.append("text")
+        //    .attr("x", 25)
+        //   	.attr("text-anchor", "start")
+        //    .attr("dy", "1em")
+        //    .attr("y", function(d, i) { return 20 * i; })
+        //    .text(function(d) {return d.State;})
+        //   .attr("font-size", "10px");
+        //
+        //
+        //   legend.append("text")
+        //    .attr("x",31)
+        //    .attr("dy", "-.2em")
+        //    .attr("y",-10)
+        //    .text("State")
+        // 	.attr("font-size", "17px");
+
+
+        var ant = svg.selectAll(".ant")
+          .data(data)
+          .enter().append("g");
+        // .attr("class","ant")
+        // .attr("transform", "translate(" + 4 + "," + 30+ ")");
+
+        // ant.append("rect")
+        //   .attr("x", 10)
+        //   .attr("y", 120 )
+        //   .attr("width", 140 )
+        //   .attr("height", 80)
+        //   .style("fill", "none");
+
+        ant.append("line")
+          .attr("x1", 10)
+          .attr("x2", 130)
+          .attr("y1", 240)
+          .attr("y2", 240)
+          .attr("stroke", "black");
+
+        ant.append("line")
+          .attr("x1", 130)
+          .attr("x2", 182)
+          .attr("y1", 240)
+          .attr("y2", 260)
+          .attr("stroke", "black");
+
+        ant.append("text")
+          .attr("x", 12)
+          .attr("y", 140)
+          .attr("text-anchor", "start")
+          .style("font-size", "14px")
+          .style("font-family", "Comic Sans MS")
+          .text("The most number of fatal accidents were reported in Texas. In the year 2015, there were 3190 accidents reported in Texas.")
+          .call(wrap, 140);
+
+
+
+        ant.append("line")
+          .attr("x1", 12)
+          .attr("x2", 116)
+          .attr("y1", 576)
+          .attr("y2", 576)
+          .attr("stroke", "black");
+
+        ant.append("line")
+          .attr("x1", 116)
+          .attr("x2", 140)
+          .attr("y1", 576)
+          .attr("y2", 534)
+          .attr("stroke", "black");
+
+        ant.append("text")
+          .attr("x", 12)
+          .attr("y", 590)
+          .attr("text-anchor", "start")
+          .style("font-size", "14px")
+          .style("font-family", "Comic Sans MS")
+          .text("With a total of 3123 fatal accidents California comes second as the state with most number of accidents in 2015")
+          .call(wrap, 140);
+
+        //The numbers in the state of California were very close to that in Texas. There were 3123 cases reported, making it the
+
+        ant.append("line")
+          .attr("x1", 740)
+          .attr("x2", 860)
+          .attr("y1", 515)
+          .attr("y2", 515)
+          .attr("stroke", "black");
+
+        ant.append("line")
+          .attr("x1", 740)
+          .attr("x2", 690)
+          .attr("y1", 515)
+          .attr("y2", 490)
+          .attr("stroke", "black");
+
+        ant.append("text")
+          .attr("x", 740)
+          .attr("y", 530)
+          .attr("text-anchor", "start")
+          .style("font-size", "14px")
+          .style("font-family", "Comic Sans MS")
+          .text("Florida takes the third place as the state with most number of accidents. In 2015, there were 2699 fatal accidents in Florida")
+          .call(wrap, 140);
+
+
+        // ant.append("text")
+        //   .attr("x", 700)
+        //   .attr("y", 60)
+        //   .attr("text-anchor", "start")
+        //   .style("font-size", "14px")
+        //   .style("font-family", "Comic Sans MS")
+        //   .text("Throughout the United States there were a total of 35,485 fatal accidents in the year of 2015.. Drunk drivers were responsible for 9,478 of these cases!! ")
+        //   .call(wrap, 230);
+
+      });
+
+
+      // function update() {
+      //     var x = document.getElementById("mySelect").value;
+      //     document.getElementById("demo").innerHTML = "You selected: " + x;
+      // }
+
+      function wrap(text, width) {
+        text.each(function() {
+          var text = d3.select(this),
+            words = text.text().split(/\s+/).reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1, // ems
+            x = text.attr("x"),
+            y = text.attr("y"),
+            dy = 0, //parseFloat(text.attr("dy")),
+            tspan = text.text(null)
+            .append("tspan")
+            .attr("x", x)
+            .attr("y", y)
+            .attr("dy", dy + "em");
+          while (word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+            if (tspan.node().getComputedTextLength() > width) {
+              line.pop();
+              tspan.text(line.join(" "));
+              line = [word];
+              tspan = text.append("tspan")
+                .attr("x", x)
+                .attr("y", y)
+                .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                .text(word);
+            }
+          }
+        });
+      }
+    </script>
+  </div>
+</div>
+
+<body>
+
+  <!-- </br>
+  </br> -->
+
+  <div class="col-sm-3">
+
+    <h4>Numbers by State</h4>
+    <p>Here we see an overview of the total number of fatal accidents per state. There was a total of 35,485 accidents in the entire United States in 2015.</p>
+    <p>Texas had more number of fatal crashes of all the states. There was a total of 3190 cases reported in Texas. California and Florida were the next in the order.</p>
+    <p>We can see a correlation to the size of the state to the number of accidents. Some of the smaller states have fewer number of accidents while the bigger states like Texas and California had higher numbers.</p>
+    <p>Note: The chart only has the details for the continental states of the US. So, the details for Alaska, Hawaii and other territories are not available.</p>
+
+    </br>
+    <h4>About the chart</h4>
+    <p>The bubble chart here gives an overview on the number of accidents across the different states in US.</p>
+    <p>Each bubble or circle in the chart represent a state in the US and the size or radius of the circle represents corresponds to the number of accidents; bigger circle means higher number of accidents. A random color coding is used to fill the circles.</p>
+    <p>Hovering over the bubbles will provide information on the full state name and the count of fatal accidents in that state. Also, a required can be selected using the drop-down menu. This selection will highlight the selected state on the chart. </p>
+  </div>
+
+</body>
+
+</html>
