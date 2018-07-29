@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    /* svg {
+ font: 10px"Lato";
+} */
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+    }
+
+    .topnav {
+      margin: 0 auto;
+      width: 900px;
+      overflow: hidden;
+      background-color: #f2f2f2;
+      border-radius: 8px;
+      /* display: inline; */
+      text-align: center;
+    }
+
+    .topnav a {
+      float: left;
+      display: inline;
+      color: #4d4d4d;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .topnav a:hover {
+      background-color: #ddd;
+      color: black;
+      border-radius: 8px;
+    }
+
+    .topnav a.active {
+      background-color: #bfbfbf;
+      color: black;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body link="black">
+
+  <title> Data Visualization - Final Project </title>
+  </br>
+  <h1 align="center"> Fatal Accidents in United States - Year 2015 </h1>
+
+  <div class="topnav">
+    <a class="active" href="aboutVisualization.html">About The Visualization </a>
+    <a href="accidentsByState.html">Fatal Accidents by State</a>
+    <a href="highwaysVsOtherRoads.html">Highways vs Other Roads</a>
+    <a href="aboutVisualization.html"> &ltPrev </a>
+    <a href="accidentsByState.html">Next> </a>
+  </div>
+
+
+  <div class="row">
+    <div class="column">
+
+      <!-- <div class="col-sm-3"> -->
+      <h4>The Project</h4>
+      <p>The goal of this project is to assist the readers in visualizing the number of fatal accidents that occurred in the United States of America in the year 2015. The project also provides detailed information on the number of fatal accidents that occurred
+        on highways and on other roads.The narrative visualization follows the interactive slide show structure. The first scene presents the general information about the project, the dataset used in the project, the visualization structure, its elements
+        and the technical references. The second and third scene are more interactive and allow readers to get to know about the number of fatal accidents by state and the number of fatal accidents on highways vs local roads. Readers can select the state
+        from the drop down list and the selected state will be highlighted for reference.</p>
+
+      <h4>Scenes</h4>
+      <p> The first scene provides an overview on the total number of fatal accidents by state. The readers will be seeing a bubble chart with each bubble representing a state and the size of it corresponding to the total number of accidents in the state.
+        The reader can get further information by hovering over the bubbles. This will produce a tooltip which will show the full state name and the number of fatal accidents. </p>
+      <p>The second scene provides information on the number of fatal accidents that occurred on highways in comparison to the other local roads. A stacked bar chart was used to depict this scene. The readers can hover over the stacked bars and gather more
+        information though the tooltip.</p>
+      <p>All the scenes are split into two panel or columns. The first scene is split is split equally and both columns have equal space. The rest of the scenes are split in the ratio of 75:25, and the left columns are used for the charts and the right columns
+        are used for the text description.</p>
+
+      <h4>Annotations</h4>
+      <p>The scenes contain static annotations that highlight some interesting details seen on the charts and are cleared between the scenes. In addition to these the scenes also contain tooltips that provide further information as users hover over each
+        the different areas in the chart.</p>
+
+      <!-- </div> -->
+
+    </div>
+
+    <!-- <div class="col-sm-3"> -->
+    <!-- <div class="column left"> -->
+    <div class="column">
+      <h4>Parameters</h4>
+      <p>The main parameter is the scene name that is displayed. This parameter drives the gathering of data that is needed for the scenes as well as the annotations that are displayed for the scene.</p>
+
+      <h4>Triggers</h4>
+      <p>The trigger is the selection of the scene name by the reader. This triggers the loading of the required data and generating the charts, the annotations and the text description displayed on the right side of the webpage.</p>
+
+
+      <h4>Dataset</h4>
+      <p>The dataset used here is a public data available on the link-<a href="https://www.kaggle.com/usdot/nhtsa-traffic-fatalities"> https://www.kaggle.com/usdot/nhtsa-traffic-fatalities </a></p>
+      <p> The dataset is published by National Highway Traffic Safety Administration (NHTSA). The NHTSA's Fatality Analysis Reporting System(FARS) publishes an annual report for the fatal accidents that occurred over last year. The data set has around 70
+        columns and custom python scripts were used to generate the data needed for this project in csv files.
+      </p>
+
+      <h4>References</h4>
+      <p> The below sites were referred during the course of this project: <br>
+
+        <br>https://bl.ocks.org/mbostock/3886208
+        <br>https://github.com/d3/d3/wiki/gallery
+        <br>https://www.w3schools.com/
+        <br>http://www.tutorialsteacher.com/d3js/d3js-resources
+        <br>https://bl.ocks.org/mbostock/7555321</p>
+    </div>
+
+  </div>
+
+</body>
+
+</html>
